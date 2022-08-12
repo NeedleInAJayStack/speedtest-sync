@@ -1,8 +1,9 @@
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+import subprocess
+import json
 import psycopg2
-import speedtest
 
 load_dotenv()
 
@@ -15,15 +16,14 @@ db_password = os.getenv('DB_PASSWORD')
 current_time = datetime.now()
 
 # Measure speed
-speedtester = speedtest.Speedtest()
-speedtester.get_servers()
-speedtester.get_best_server()
-speedtester.download()
-speedtester.upload()
-speedtester.results.share()
-results_dict = speedtester.results.dict()
-download = results_dict["download"]
-upload = results_dict["upload"]
+# This requires the speedtest cli: https://www.speedtest.net/apps/cli
+command = "speedtest --server-id=12652 --format=json"
+speedtest_result_string = subprocess.check_output(command, shell=True)
+
+speedtest_result = json.loads(speedtest_result_string)
+
+download = speedtest_result["download"]["bytes"]
+upload = speedtest_result["upload"]["bytes"]
 
 # Write to SQL
 download_point_id = "a60c7956-7592-4095-8c04-ab6cc41e431a"
