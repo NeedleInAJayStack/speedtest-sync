@@ -3,17 +3,16 @@ from dotenv import load_dotenv
 import os
 import subprocess
 import json
-import psycopg2
+import requests
 
 load_dotenv()
 
-db_host = os.getenv('DB_HOST')
-db_port = os.getenv('DB_PORT')
-db_name = os.getenv('DB_NAME')
-db_user = os.getenv('DB_USER')
-db_password = os.getenv('DB_PASSWORD')
+api_path = "https://data.jayherron.org"
 
-current_time = datetime.now()
+api_user = os.getenv('API_USER')
+api_password = os.getenv('API_PASSWORD')
+
+current_time = datetime.utcnow().replace(microsecond=0).isoformat() + "+00:00"
 
 # Measure speed
 # This requires the speedtest cli: https://www.speedtest.net/apps/cli
@@ -22,19 +21,34 @@ speedtest_result_string = subprocess.check_output(command, shell=True)
 
 speedtest_result = json.loads(speedtest_result_string)
 
-download = speedtest_result["download"]["bytes"]
-upload = speedtest_result["upload"]["bytes"]
+download = float(speedtest_result["download"]["bytes"])
+upload = float(speedtest_result["upload"]["bytes"])
 
-# Write to SQL
+# Write to API
 download_point_id = "a60c7956-7592-4095-8c04-ab6cc41e431a"
 upload_point_id = "5350f77a-9e80-4e8e-8b81-047545a97a63"
 
-conn = psycopg2.connect(host=db_host, port=db_port, dbname=db_name, user=db_user, password=db_password)
-cur = conn.cursor()
+token_request = requests.get(f"{api_path}/auth/token", auth=(api_user, api_password))
+token_request.raise_for_status()
+api_token = token_request.json()["token"]
 
-cur.execute("INSERT INTO his (\"pointId\", ts, value) VALUES (%s, %s, %s)", (download_point_id, current_time, download))
-cur.execute("INSERT INTO his (\"pointId\", ts, value) VALUES (%s, %s, %s)", (upload_point_id, current_time, upload))
+download_request = requests.post(
+    f"{api_path}/his/{download_point_id}",
+    headers = {"Authorization": f"Bearer {api_token}"},
+    json = {
+        "ts": current_time,
+        "value": download
+    }
+)
+download_request.raise_for_status()
 
-conn.commit()
-cur.close()
-conn.close()
+upload_request = requests.post(
+    f"{api_path}/his/{upload_point_id}",
+    headers = {"Authorization": f"Bearer {api_token}"},
+    json = {
+        "ts": current_time,
+        "value": upload
+    }
+)
+upload_request.raise_for_status()
+
