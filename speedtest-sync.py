@@ -7,7 +7,7 @@ import requests
 
 load_dotenv()
 
-api_path = "https://data.jayherron.org"
+api_path = "https://data.herron.dev"
 
 api_user = os.getenv('API_USER')
 api_password = os.getenv('API_PASSWORD')
