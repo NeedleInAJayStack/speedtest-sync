@@ -28,12 +28,12 @@ upload = float(speedtest_result["upload"]["bytes"])
 download_point_id = "a60c7956-7592-4095-8c04-ab6cc41e431a"
 upload_point_id = "5350f77a-9e80-4e8e-8b81-047545a97a63"
 
-token_request = requests.get(f"{api_path}/auth/token", auth=(api_user, api_password))
+token_request = requests.get(f"{api_path}/api/auth/token", auth=(api_user, api_password))
 token_request.raise_for_status()
 api_token = token_request.json()["token"]
 
 download_request = requests.post(
-    f"{api_path}/his/{download_point_id}",
+    f"{api_path}/api/his/{download_point_id}",
     headers = {"Authorization": f"Bearer {api_token}"},
     json = {
         "ts": current_time,
@@ -43,7 +43,7 @@ download_request = requests.post(
 download_request.raise_for_status()
 
 upload_request = requests.post(
-    f"{api_path}/his/{upload_point_id}",
+    f"{api_path}/api/his/{upload_point_id}",
     headers = {"Authorization": f"Bearer {api_token}"},
     json = {
         "ts": current_time,
@@ -51,4 +51,3 @@ upload_request = requests.post(
     }
 )
 upload_request.raise_for_status()
-
