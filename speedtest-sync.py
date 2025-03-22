@@ -33,7 +33,7 @@ token_request.raise_for_status()
 api_token = token_request.json()["token"]
 
 download_request = requests.post(
-    f"{api_path}/api/his/{download_point_id}",
+    f"{api_path}/api/recs/{download_point_id}/history",
     headers = {"Authorization": f"Bearer {api_token}"},
     json = {
         "ts": current_time,
@@ -43,7 +43,7 @@ download_request = requests.post(
 download_request.raise_for_status()
 
 upload_request = requests.post(
-    f"{api_path}/api/his/{upload_point_id}",
+    f"{api_path}/api/recs/{upload_point_id}/history",
     headers = {"Authorization": f"Bearer {api_token}"},
     json = {
         "ts": current_time,
